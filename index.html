@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopaholic's Paradise - 頂級過手癮旗艦版</title>
+    <title>Shopaholic's Paradise - 雲端聯網旗艦版</title>
     <!-- 引入 Tesseract.js 用於圖片文字識別 (OCR) -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
@@ -292,7 +292,7 @@
 <header>
     <h1 onclick="switchTab('shop')">Shopaholic's Paradise</h1>
     <div class="header-right">
-        <span id="user-display" style="font-size: 14px; cursor:pointer;" onclick="switchTab('profile')">訪客模式</span>
+        <span id="user-display" style="font-size: 14px; cursor:pointer;" onclick="switchTab('profile')">載入中...</span>
         <button class="btn" style="width: auto; padding: 6px 12px; font-size: 13px;" onclick="openAuthModal()" id="auth-btn-top">登入 / 註冊</button>
     </div>
 </header>
@@ -302,7 +302,7 @@
     <div class="vip-card" id="vip-card-box">
         <div>
             <h3 id="vip-title" style="margin:0 0 5px 0;">Beauty Insider (新手會員)</h3>
-            <p id="vip-desc" style="margin:0; font-size: 13px; opacity: 0.8;">累積消費解鎖專屬折扣優惠券與積分回饋</p>
+            <p id="vip-desc" style="margin:0; font-size: 13px; opacity: 0.8;">雲端同步多設備遊玩，累積消費解鎖專屬優惠</p>
         </div>
         <div>
             <span class="badge" id="vip-badge-text">Insider</span>
@@ -311,18 +311,19 @@
     </div>
 
     <!-- 導覽頁籤 -->
-    <div class="tabs">
+    <div class="tabs" id="nav-tabs-bar">
         <button class="tab-btn active" onclick="switchTab('shop')">逛街選購</button>
         <button class="tab-btn" onclick="switchTab('cart')">購物車 (<span id="cart-count">0</span>)</button>
         <button class="tab-btn" onclick="switchTab('orders')">訂單紀錄</button>
         <button class="tab-btn" onclick="switchTab('profile')">👤 會員中心</button>
+        <!-- 管理員後台頁籤會透過 JS 動態加入 -->
     </div>
 
     <!-- 1. 逛街頁面 -->
     <div id="tab-shop">
         <div class="action-bar">
             <div class="categories" id="category-buttons"></div>
-            <button class="btn" style="width: auto; padding: 8px 15px; background: var(--gold);" onclick="openModal('wishlist-modal')">📸 截圖上傳夢幻逸品 (OCR 智慧讀圖)</button>
+            <button class="btn" style="width: auto; padding: 8px 15px; background: var(--gold);" onclick="openModal('wishlist-modal')">📸 截圖上傳夢幻逸品 (雲端共享)</button>
         </div>
         <div class="product-grid" id="product-grid"></div>
     </div>
@@ -331,13 +332,12 @@
     <div id="tab-cart" style="display: none;">
         <div class="cart-layout">
             <div>
-                <h2>您的購物車</h2>
+                <h2>您的雲端購物車</h2>
                 <div id="cart-items-list"></div>
             </div>
             <div class="checkout-box">
                 <h3>結帳與送貨資訊</h3>
                 
-                <!-- 送貨方式與地址 -->
                 <label>🚚 選擇送貨方式：</label>
                 <select id="shipping-method" onchange="updateShippingFee()">
                     <option value="standard">香港本地速遞 (住宅/工商) - HKD 30 (訂單滿 $500 免運)</option>
@@ -356,7 +356,6 @@
 
                 <hr style="border:0; border-top:1px solid #eee; margin: 15px 0;">
 
-                <!-- 優惠券 -->
                 <div id="available-coupons" style="margin-bottom: 10px;"></div>
                 <label>輸入優惠券代碼：</label>
                 <div style="display: flex; gap: 5px;">
@@ -365,7 +364,6 @@
                 </div>
                 <p id="coupon-msg" style="font-size: 12px; color: green; margin: 3px 0 10px 0;"></p>
 
-                <!-- 積分折抵 -->
                 <div style="background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #eee;">
                     <label style="margin:0 0 5px 0; display:block; font-weight:600;">🪙 積分扣減 (現有可用: <span id="cart-avail-points">0</span> 分)</label>
                     <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
@@ -389,7 +387,7 @@
                     <option value="FPS">轉數快 (FPS)</option>
                 </select>
 
-                <button class="btn" onclick="checkoutOrder()" style="margin-top: 10px; background: var(--accent-pink);">確認無痛下單</button>
+                <button class="btn" onclick="checkoutOrder()" style="margin-top: 10px; background: var(--accent-pink);">確認雲端無痛下單</button>
             </div>
         </div>
     </div>
@@ -397,7 +395,7 @@
     <!-- 3. 訂單紀錄頁面 -->
     <div id="tab-orders" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h2 style="margin:0;">歷史訂單紀錄</h2>
+            <h2 style="margin:0;">雲端訂單紀錄</h2>
             <button class="btn" style="width: auto; padding: 6px 12px; background: #6366f1; font-size: 13px;" onclick="simulateTimeAdvance()">⚡ 模擬時間快進 (+7天看完成狀態)</button>
         </div>
         <div id="orders-list"></div>
@@ -405,14 +403,14 @@
 
     <!-- 4. 會員中心頁面 -->
     <div id="tab-profile" style="display: none;">
-        <h2>會員中心</h2>
+        <h2>會員中心 (CRM)</h2>
         <div class="checkout-box" style="max-width: 600px;">
-            <h3>個人資料與帳戶管理</h3>
+            <h3>帳戶管理與雲端同步</h3>
             <label>目前登入帳戶名稱：</label>
             <input type="text" id="profile-name-input" disabled style="background: #f1f1f1;">
-            <label>電子信箱：</label>
+            <label>電子信箱 / 虛擬綁定：</label>
             <input type="email" id="profile-email-input" placeholder="user@example.com">
-            <button class="btn" onclick="saveProfileData()">儲存個人資料</button>
+            <button class="btn" onclick="saveProfileData()">更新個人資料</button>
 
             <hr style="border:0; border-top:1px solid #eee; margin: 25px 0;">
 
@@ -420,7 +418,7 @@
             <p>累積消費總額：<strong>HKD <span id="prof-saved">0</span></strong></p>
             <p>目前可用購物積分：<strong style="color: var(--gold);"><span id="prof-points">0</span> 分</strong></p>
             
-            <h4 style="margin-top: 20px;">我的專屬優惠券 (已使用狀態追蹤)</h4>
+            <h4 style="margin-top: 20px;">我的專屬優惠券</h4>
             <div id="prof-coupons-list"></div>
 
             <hr style="border:0; border-top:1px solid #eee; margin: 25px 0;">
@@ -428,15 +426,25 @@
         </div>
     </div>
 
-    <!-- 頁尾政策與說明 -->
-    <footer>
-        <p>© 2026 Shopaholic's Paradise. All rights reserved (模擬過手癮專用).</p>
-        <div style="margin-top: 10px;">
-            <a onclick="openModal('policy-modal')">退換貨政策</a> | 
-            <a onclick="openModal('tc-modal')">條款與細則 (T&C)</a> | 
-            <a onclick="openModal('faq-modal')">常見問題 (FAQ)</a> | 
-            <a onclick="openModal('contact-modal')">聯絡我們</a>
+    <!-- 5. 管理員後台頁面 (僅限管理員可見) -->
+    <div id="tab-admin" style="display: none;">
+        <h2>🛠️ 管理員戰情後台 (所有玩家數據)</h2>
+        <p style="color: #666; font-size: 13px;">此頁面僅有最高權限管理員可見，即時監控所有玩家上傳的逸品與訂單。</p>
+        
+        <div style="margin-top: 20px;">
+            <h3>📦 所有玩家上傳的夢幻逸品總覽</h3>
+            <div id="admin-all-products" style="margin-bottom: 30px;">載入中...</div>
+
+            <h3>🛒 所有玩家目前的購物車狀態</h3>
+            <div id="admin-all-carts" style="margin-bottom: 30px;">載入中...</div>
+
+            <h3>📋 所有玩家的歷史訂單</h3>
+            <div id="admin-all-orders">載入中...</div>
         </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Shopaholic's Paradise. Firebase Cloud Integrated Edition.</p>
     </footer>
 </div>
 
@@ -445,18 +453,13 @@
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('auth-modal')">&times;</span>
         <h2 id="auth-modal-title">會員登入 / 註冊</h2>
-        <p style="font-size: 13px; color: #666;" id="auth-modal-desc">輸入您的帳號與密碼。如果帳號不存在，系統將會自動為您註冊新帳戶！</p>
+        <p style="font-size: 13px; color: #666;" id="auth-modal-desc">輸入您的用戶名稱與密碼，雲端自動同步購物車！</p>
         
         <label>用戶名稱 (Username)：</label>
-        <input type="text" id="auth-username" placeholder="例如: Panda 或 Amy">
+        <input type="text" id="auth-username" placeholder="例如: panda 或 amy">
         
         <label>密碼 (Password)：</label>
         <input type="password" id="auth-password" placeholder="請輸入密碼">
-        
-        <div id="register-extra-fields" style="display:none;">
-            <label>電子郵件 (Email)：</label>
-            <input type="email" id="auth-email" placeholder="name@example.com">
-        </div>
 
         <button class="btn" onclick="processAuth()" id="auth-submit-btn" style="margin-top: 10px;">登入</button>
         <p style="text-align: center; margin-top: 15px; font-size: 13px;">
@@ -469,8 +472,8 @@
 <div class="modal" id="wishlist-modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('wishlist-modal')">&times;</span>
-        <h2>📸 截圖上傳夢幻逸品 (OCR 智慧讀圖)</h2>
-        <p style="font-size: 13px; color: #666;">上傳商品截圖後，系統會自動辨識圖中的商品名稱與價格！</p>
+        <h2>📸 截圖上傳夢幻逸品 (雲端共享)</h2>
+        <p style="font-size: 13px; color: #666;">上傳截圖後系統自動辨識，並即時同步到所有玩家的逛街頁面！</p>
         
         <label>上傳商品截圖：</label>
         <input type="file" id="wish-img-file" accept="image/*" style="margin: 8px 0 15px 0;" onchange="previewAndOcrImage(event)">
@@ -493,112 +496,188 @@
             <button class="btn" style="width: 100px; height: 42px; margin-top: 8px;" onclick="addNewCategoryPrompt()">➕ 新分類</button>
         </div>
 
-        <button class="btn" onclick="addCustomProduct()" style="margin-top: 10px;">放入逛街清單</button>
+        <button class="btn" onclick="addCustomProduct()" style="margin-top: 10px;">上傳至雲端共享逸品牆</button>
     </div>
 </div>
 
-<!-- 條款與細則 (T&C) Modal -->
-<div class="modal" id="tc-modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal('tc-modal')">&times;</span>
-        <h2>會員制度與條款細則 (T&C)</h2>
-        <div style="font-size: 13px; line-height: 1.6; color: #444;">
-            <p><b>1. 會員帳戶與密碼安全</b><br>用戶註冊時需設定密碼，並對帳戶登入安全負責。所有購物車、訂單紀錄、已使用優惠券狀態皆安全獨立綁定於個別帳戶中。</p>
-            <p><b>2. 優惠券防重複使用條款</b><br>每張優惠券（如 INSIDER98、GOLD95、DIAMOND90）於每個帳戶中<b>僅限使用一次</b>。一旦成功結帳折抵後即告失效。</p>
-            <p><b>3. 積分回饋計劃 (HKD 100 = 1分)</b><br>每完成一筆消費，系統按實付金額計算積分。積分可於結帳時勾選折抵現金（每 100 分 = HKD 1）。</p>
-        </div>
-    </div>
-</div>
+<!-- Firebase SDK 引入與主程式邏輯 -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
-<!-- 常見問題 (FAQ) Modal -->
-<div class="modal" id="faq-modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal('faq-modal')">&times;</span>
-        <h2>常見問題 (FAQ)</h2>
-        <div style="font-size: 13px; line-height: 1.6; color: #444;">
-            <p><b>Q1: 截圖上傳如何自動讀取名稱和價錢？</b><br>上傳截圖後，系統會自動進行文字辨識（OCR），嘗試提取圖片中的關鍵字與數字金額填入欄位。若辨識有誤差，您也可以隨時手動修正！</p>
-            <p><b>Q2: 優惠券可以重複使用嗎？</b><br>不行。每張優惠券在同一個帳戶中只能成功使用一次。</p>
-            <p><b>Q3: 積分怎麼折抵現金？</b><br>在結帳頁面中勾選「使用所有可用積分折抵現金」方塊即可直接扣減金額。</p>
-        </div>
-    </div>
-</div>
+    // 您的 Firebase 設定金鑰
+    const firebaseConfig = {
+        apiKey: "AIzaSyCTs-gXpkaqa7pf9u9-SlDPwFEBHzQ8OB8",
+        authDomain: "shopaholic-paradise.firebaseapp.com",
+        projectId: "shopaholic-paradise",
+        storageBucket: "shopaholic-paradise.firebasestorage.app",
+        messagingSenderId: "139306717425",
+        appId: "1:139306717425:web:d7aaf3901e7e08d9639950"
+    };
 
-<!-- 其他政策 Modals -->
-<div class="modal" id="policy-modal">
-    <div class="modal-content"><span class="close-btn" onclick="closeModal('policy-modal')">&times;</span><h2>退換貨政策</h2><p>所有訂單皆享有 100% 無條件虛擬退貨！</p></div>
-</div>
-<div class="modal" id="contact-modal">
-    <div class="modal-content"><span class="close-btn" onclick="closeModal('contact-modal')">&times;</span><h2>聯絡我們</h2><p>📧 Email: support@shopaholic-paradise.mock</p></div>
-</div>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-<script>
+    // 預設商品清單
     const defaultProducts = [
-        {id: 1, name: "CHANEL 經典香奈兒口紅", price: 320, cat: "護膚品", emoji: "💄"},
-        {id: 2, name: "Celine 凱旋門腋下包", price: 18500, cat: "衣服", emoji: "👜"},
-        {id: 3, name: "Diptyque 玫瑰之水香水", price: 1280, cat: "香水", emoji: "🌸"},
-        {id: 4, name: "Apple AirPods Pro 2", price: 1849, cat: "3C", emoji: "🎧"},
-        {id: 5, name: "Gentle Monster 太陽眼鏡", price: 2150, cat: "衣服", emoji: "🕶️"},
-        {id: 6, name: "Jo Malone 英國梨與小蒼蘭", price: 1350, cat: "香水", emoji: "🌿"},
-        {id: 7, name: "Prada 尼龍托特包", price: 11500, cat: "衣服", emoji: "🛍️"},
-        {id: 8, name: "Byredo 皇室琥珀護手霜", price: 380, cat: "護膚品", emoji: "🧴"},
-        {id: 9, name: "Dyson Supersonic 吹風機", price: 3680, cat: "護膚品", emoji: "💨"},
-        {id: 10, name: "SNIDEL 法式甜美洋裝", price: 1450, cat: "衣服", emoji: "👗"},
-        {id: 11, name: "Maison Margiela Lazy Sunday Morning", price: 1550, cat: "香水", emoji: "✨"},
-        {id: 12, name: "Golden Goose 仿舊小髒鞋", price: 3990, cat: "鞋子", emoji: "👟"}
+        {id: "d1", name: "CHANEL 經典香奈兒口紅", price: 320, cat: "護膚品", emoji: "💄"},
+        {id: "d2", name: "Celine 凱旋門腋下包", price: 18500, cat: "衣服", emoji: "👜"},
+        {id: "d3", name: "Diptyque 玫瑰之水香水", price: 1280, cat: "香水", emoji: "🌸"},
+        {id: "d4", name: "Apple AirPods Pro 2", price: 1849, cat: "3C", emoji: "🎧"},
+        {id: "d5", name: "Gentle Monster 太陽眼鏡", price: 2150, cat: "衣服", emoji: "🕶️"},
+        {id: "d6", name: "Jo Malone 英國梨與小蒼蘭", price: 1350, cat: "香水", emoji: "🌿"},
+        {id: "d7", name: "Prada 尼龍托特包", price: 11500, cat: "衣服", emoji: "🛍️"},
+        {id: "d8", name: "Byredo 皇室琥珀護手霜", price: 380, cat: "護膚品", emoji: "🧴"},
+        {id: "d9", name: "Dyson Supersonic 吹風機", price: 3680, cat: "護膚品", emoji: "💨"},
+        {id: "d10", name: "SNIDEL 法式甜美洋裝", price: 1450, cat: "衣服", emoji: "👗"}
     ];
 
-    let categories = JSON.parse(localStorage.getItem('shop_categories')) || ["全部", "衣服", "香水", "護膚品", "鞋子", "3C"];
-    let products = JSON.parse(localStorage.getItem('shop_products')) || defaultProducts;
-
-    let currentUsername = localStorage.getItem('shop_current_user') || null;
+    let categories = ["全部", "衣服", "香水", "護膚品", "鞋子", "3C"];
+    let products = [];
+    let currentUser = null;
+    let userData = { cart: [], orders: [], totalSaved: 0, userEmail: "", usedCoupons: [] };
+    
     let isRegisterMode = false;
-
-    function getUserStorageKey(key) {
-        return `shop_user_${currentUsername}_${key}`;
-    }
-
-    let cart = [];
-    let orders = [];
-    let totalSaved = 0;
-    let userEmail = "";
-    let usedCoupons = [];
-
     let currentDiscountRate = 1.0;
     let appliedCouponName = "";
     let currentCatFilter = "全部";
     let tempUploadedImgData = null;
 
+    // 定義您的管理員帳號名稱 (請改成您註冊時用的用戶名稱)
+    const ADMIN_USERNAME = "admin"; 
+
     window.onload = function() {
         renderCategories();
-        renderProducts(products);
-        checkSessionState();
+        initCloudProducts();
+        
+        // 監聽 Firebase 登入狀態
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // 從 Email還原出用戶名稱
+                const username = user.email.split('@')[0];
+                document.getElementById('user-display').innerText = `Hi, ${username}`;
+                document.getElementById('auth-btn-top').innerText = '登出 (Logout)';
+                document.getElementById('auth-btn-top').onclick = logoutUser;
+                document.getElementById('auth-btn-top').style.background = '#d90429';
+
+                // 檢查是否為管理員
+                if (username === ADMIN_USERNAME) {
+                    setupAdminTab(true);
+                } else {
+                    setupAdminTab(false);
+                }
+
+                await loadUserData(user.uid);
+            } else {
+                currentUser = null;
+                userData = { cart: [], orders: [], totalSaved: 0, userEmail: "", usedCoupons: [] };
+                document.getElementById('user-display').innerText = '訪客模式 (未登入)';
+                document.getElementById('auth-btn-top').innerText = '登入 / 註冊';
+                document.getElementById('auth-btn-top').onclick = openAuthModal;
+                document.getElementById('auth-btn-top').style.background = 'var(--main-dark)';
+                setupAdminTab(false);
+                updateUserUI();
+                updateCartCount();
+            }
+        });
     };
 
-    function checkSessionState() {
-        if(currentUsername) {
-            cart = JSON.parse(localStorage.getItem(getUserStorageKey('cart'))) || [];
-            orders = JSON.parse(localStorage.getItem(getUserStorageKey('orders'))) || [];
-            totalSaved = parseInt(localStorage.getItem(getUserStorageKey('saved'))) || 0;
-            userEmail = localStorage.getItem(getUserStorageKey('email')) || "";
-            usedCoupons = JSON.parse(localStorage.getItem(getUserStorageKey('used_coupons'))) || [];
+    // 初始化雲端商品牆 (即時同步)
+    function initCloudProducts() {
+        const q = query(collection(db, "products"));
+        onSnapshot(q, (snapshot) => {
+            let cloudItems = [];
+            snapshot.forEach((docSnap) => {
+                cloudItems.push({ id: docSnap.id, ...docSnap.data() });
+            });
+
+            // 如果雲端沒有商品，先寫入預設商品
+            if(cloudItems.length === 0) {
+                defaultProducts.forEach(async (p) => {
+                    await addDoc(collection(db, "products"), p);
+                });
+                products = defaultProducts;
+            } else {
+                products = cloudItems;
+            }
+            renderProducts(currentCatFilter === '全部' ? products : products.filter(p => p.cat === currentCatFilter));
+        });
+    }
+
+    // 載入玩家個人雲端數據
+    async function loadUserData(uid) {
+        const docRef = doc(db, "users", uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            userData = docSnap.data();
         } else {
-            cart = [];
-            orders = [];
-            totalSaved = 0;
-            userEmail = "";
-            usedCoupons = [];
+            userData = { cart: [], orders: [], totalSaved: 0, userEmail: currentUser.email, usedCoupons: [] };
+            await setDoc(docRef, userData);
         }
         updateUserUI();
         updateCartCount();
     }
 
-    function openAuthModal() {
+    // 儲存玩家個人雲端數據
+    async function saveUserDataToCloud() {
+        if(!currentUser) return;
+        const docRef = doc(db, "users", currentUser.uid);
+        await setDoc(docRef, userData);
+    }
+
+    // 帳號認證 (自動包裝為虛擬 Email 達成 CRM 體驗)
+    window.processAuth = async function() {
+        const username = document.getElementById('auth-username').value.trim().toLowerCase();
+        const password = document.getElementById('auth-password').value.trim();
+
+        if(!username || !password) {
+            alert("請填寫用戶名稱與密碼！");
+            return;
+        }
+
+        // 自動組合為虛擬 Email 傳給 Firebase Authentication
+        const virtualEmail = `${username}@shopaholic.mock`;
+
+        try {
+            if(isRegisterMode) {
+                const userCredential = await createUserWithEmailAndPassword(auth, virtualEmail, password);
+                alert(`🎉 註冊成功！已自動登入帳戶：【${username}】`);
+            } else {
+                await signInWithEmailAndPassword(auth, virtualEmail, password);
+                alert(`歡迎回來，【${username}】！登入成功。`);
+            }
+            closeModal('auth-modal');
+            switchTab('shop');
+        } catch (error) {
+            console.error(error);
+            if(error.code === 'auth/email-already-in-use') {
+                alert("此用戶名稱已被註冊！請直接登入或更換名稱。");
+            } else if(error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                alert("密碼錯誤或帳號不存在！");
+            } else {
+                alert("認證失敗: " + error.message);
+            }
+        }
+    }
+
+    window.logoutUser = async function() {
+        if(confirm("確定要登出目前的雲端帳戶嗎？")) {
+            await signOut(auth);
+            switchTab('shop');
+            alert("已成功登出。");
+        }
+    }
+
+    window.openAuthModal = function() {
         isRegisterMode = false;
         updateAuthModalUI();
         openModal('auth-modal');
     }
 
-    function toggleAuthMode() {
+    window.toggleAuthMode = function() {
         isRegisterMode = !isRegisterMode;
         updateAuthModalUI();
     }
@@ -608,81 +687,111 @@
         const desc = document.getElementById('auth-modal-desc');
         const submitBtn = document.getElementById('auth-submit-btn');
         const toggleLink = document.getElementById('auth-toggle-mode');
-        const extraFields = document.getElementById('register-extra-fields');
 
         if(isRegisterMode) {
             title.innerText = "註冊新會員帳戶";
-            desc.innerText = "建立您的專屬會員密碼，享受積分回饋！";
+            desc.innerText = "建立您的專屬密碼，跨設備雲端同步購物車！";
             submitBtn.innerText = "立即註冊";
             toggleLink.innerText = "已有帳號？點此切換至「登入帳戶」";
-            extraFields.style.display = 'block';
         } else {
             title.innerText = "會員登入";
-            desc.innerText = "請輸入您的用戶名稱與密碼以登入帳戶。";
+            desc.innerText = "請輸入用戶名稱與密碼以登入雲端帳戶。";
             submitBtn.innerText = "登入";
             toggleLink.innerText = "還沒有帳號？點此切換至「註冊新會員」";
-            extraFields.style.display = 'none';
         }
     }
 
-    function processAuth() {
-        const username = document.getElementById('auth-username').value.trim();
-        const password = document.getElementById('auth-password').value.trim();
-        const emailInput = document.getElementById('auth-email').value.trim();
+    // 畫面渲染與分頁切換
+    window.switchTab = function(tabName) {
+        document.getElementById('tab-shop').style.display = tabName === 'shop' ? 'block' : 'none';
+        document.getElementById('tab-cart').style.display = tabName === 'cart' ? 'block' : 'none';
+        document.getElementById('tab-orders').style.display = tabName === 'orders' ? 'block' : 'none';
+        document.getElementById('tab-profile').style.display = tabName === 'profile' ? 'block' : 'none';
+        const adminTab = document.getElementById('tab-admin');
+        if(adminTab) adminTab.style.display = tabName === 'admin' ? 'block' : 'none';
 
-        if(!username || !password) {
-            alert("請填寫用戶名稱與密碼！");
-            return;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        // 依照順序高亮標籤
+        if(tabName === 'shop') document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        if(tabName === 'cart') {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            renderCartItems();
+            renderAvailableCoupons();
         }
-
-        let userDB = JSON.parse(localStorage.getItem('shop_users_db')) || {};
-
-        if(isRegisterMode) {
-            if(userDB[username]) {
-                alert("此用戶名稱已經存在！請直接登入或更換名稱。");
-                return;
-            }
-            userDB[username] = { password: password, email: emailInput || "" };
-            localStorage.setItem('shop_users_db', JSON.stringify(userDB));
-
-            currentUsername = username;
-            localStorage.setItem('shop_current_user', currentUsername);
-            
-            closeModal('auth-modal');
-            checkSessionState();
-            alert(`🎉 註冊成功！已自動為您登入帳戶：【${currentUsername}】`);
-            switchTab('shop');
-        } else {
-            if(!userDB[username]) {
-                if(confirm("此帳戶不存在，是否直接為您以輸入的密碼建立新帳戶並登入？")) {
-                    isRegisterMode = true;
-                    processAuth();
-                }
-                return;
-            }
-            if(userDB[username].password !== password) {
-                alert("密碼錯誤！請重新輸入。");
-                return;
-            }
-
-            currentUsername = username;
-            localStorage.setItem('shop_current_user', currentUsername);
-
-            closeModal('auth-modal');
-            checkSessionState();
-            alert(`歡迎回來，【${currentUsername}】！登入成功。`);
-            switchTab('shop');
+        if(tabName === 'orders') {
+            document.querySelectorAll('.tab-btn')[2].classList.add('active');
+            renderOrders();
+        }
+        if(tabName === 'profile') {
+            document.querySelectorAll('.tab-btn')[3].classList.add('active');
+            loadProfileView();
+        }
+        if(tabName === 'admin') {
+            const adminBtn = document.getElementById('admin-tab-btn');
+            if(adminBtn) adminBtn.classList.add('active');
+            loadAdminDashboard();
         }
     }
 
-    function logoutUser() {
-        if(confirm("確定要登出目前的帳戶嗎？")) {
-            currentUsername = null;
-            localStorage.removeItem('shop_current_user');
-            checkSessionState();
-            switchTab('shop');
-            alert("已成功登出帳戶。");
+    function setupAdminTab(isAdmin) {
+        const tabsBar = document.getElementById('nav-tabs-bar');
+        let existingBtn = document.getElementById('admin-tab-btn');
+        if(isAdmin && !existingBtn) {
+            const btn = document.createElement('button');
+            btn.className = 'tab-btn';
+            btn.id = 'admin-tab-btn';
+            btn.style.color = '#d90429';
+            btn.style.fontWeight = 'bold';
+            btn.innerHTML = '🛠️ 管理員後台';
+            btn.onclick = () => switchTab('admin');
+            tabsBar.appendChild(btn);
+        } else if(!isAdmin && existingBtn) {
+            existingBtn.remove();
         }
+    }
+
+    // 載入管理員後台資料 (抓取所有玩家數據)
+    async function loadAdminDashboard() {
+        if(!currentUser) return;
+        
+        // 1. 抓取所有上傳的商品
+        const prodSnap = await getDocs(collection(db, "products"));
+        let allProds = [];
+        prodSnap.forEach(d => allProds.push(d.data()));
+        
+        document.getElementById('admin-all-products').innerHTML = `
+            <div style="background:white; padding:15px; border:1px solid #ddd; border-radius:6px; font-size:13px;">
+                共 ${allProds.length} 件商品在雲端。<br>
+                ${allProds.map(p => `• <b>${p.name}</b> (HKD ${p.price}) - 類別: ${p.cat}`).join('<br>')}
+            </div>
+        `;
+
+        // 2. 抓取所有玩家的購物車與訂單
+        const userSnap = await getDocs(collection(db, "users"));
+        let allCartsHtml = "";
+        let allOrdersHtml = "";
+
+        userSnap.forEach(d => {
+            const uData = d.data();
+            const uEmail = uData.userEmail || d.id;
+            const uName = uEmail.split('@')[0];
+
+            allCartsHtml += `<div style="background:white; padding:10px; margin-bottom:8px; border:1px solid #ddd; border-radius:4px; font-size:13px;">
+                <b>玩家: ${uName}</b> (購物車商品數: ${uData.cart ? uData.cart.length : 0})<br>
+                ${uData.cart && uData.cart.length > 0 ? uData.cart.map(i => `&nbsp;&nbsp;- ${i.name} ($${i.price})`).join('<br>') : '&nbsp;&nbsp;(購物車目前空)'}
+            </div>`;
+
+            if(uData.orders && uData.orders.length > 0) {
+                uData.orders.forEach(o => {
+                    allOrdersHtml += `<div style="background:white; padding:10px; margin-bottom:8px; border:1px solid #ddd; border-radius:4px; font-size:13px;">
+                        <b>玩家: ${uName}</b> | 訂單編號: ${o.id} | 金額: HKD ${o.total.toLocaleString()} | 時間: ${o.date}
+                    </div>`;
+                });
+            }
+        });
+
+        document.getElementById('admin-all-carts').innerHTML = allCartsHtml || '尚無玩家資料';
+        document.getElementById('admin-all-orders').innerHTML = allOrdersHtml || '尚無歷史訂單';
     }
 
     function renderCategories() {
@@ -697,13 +806,12 @@
         `).join('');
     }
 
-    function addNewCategoryPrompt() {
-        const newCat = prompt("請輸入新的類別名稱 (例如: 手錶、居家)：");
+    window.addNewCategoryPrompt = function() {
+        const newCat = prompt("請輸入新的類別名稱：");
         if(newCat && newCat.trim() !== "") {
             const trimmed = newCat.trim();
             if(!categories.includes(trimmed)) {
                 categories.push(trimmed);
-                localStorage.setItem('shop_categories', JSON.stringify(categories));
                 renderCategories();
                 document.getElementById('wish-cat').value = trimmed;
                 alert(`成功新增類別「${trimmed}」！`);
@@ -713,8 +821,8 @@
         }
     }
 
-    // 核心升級：截圖上傳並進行 OCR 自動讀取名稱與價格
-    async function previewAndOcrImage(event) {
+    // 截圖上傳與 OCR
+    window.previewAndOcrImage = async function(event) {
         const file = event.target.files[0];
         if (!file) return;
 
@@ -732,54 +840,34 @@
         statusBox.innerText = "🔍 系統正在使用 OCR 智慧讀取截圖中的名稱與價錢...";
 
         try {
-            // 使用 Tesseract.js 辨識圖片中的中英文與數字
-            const { data: { text } } = await Tesseract.recognize(file, 'eng+chi_tra', {
-                logger: m => {} 
-            });
-
-            console.log("OCR 辨識原始文字:", text);
-
-            // 智慧解析價格（尋找數字，如 $1,280 或 1280 或 HKD 320）
+            const { data: { text } } = await Tesseract.recognize(file, 'eng+chi_tra', { logger: m => {} });
             const priceRegex = /(?:HKD|\$|￥)?\s*([0-9]{1,3}(?:,[0-9]{3})*|[0-9]+)(?:\.[0-9]{2})?/g;
             let match;
             let foundPrices = [];
             while ((match = priceRegex.exec(text)) !== null) {
                 let pNum = parseInt(match[1].replace(/,/g, ''));
-                // 過濾掉太小的數字（如年份或編號），保留合理商品價格範圍
                 if (pNum > 50 && pNum < 200000) {
                     foundPrices.push(pNum);
                 }
             }
-
             if (foundPrices.length > 0) {
-                // 取找到的第一個合理價格或最大價格作為售價
                 document.getElementById('wish-price').value = foundPrices[0];
             }
 
-            // 智慧解析名稱（過濾掉多餘空白與符號，取首行或含意文字）
             const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
             if (lines.length > 0) {
-                // 取第一行較有意義的文字作為商品名稱
                 document.getElementById('wish-name').value = lines[0].substring(0, 30);
             }
-
-            statusBox.innerText = "✨ OCR 讀取完成！請檢查並確認名稱與價格。";
+            statusBox.innerText = "✨ OCR 讀取完成！請檢查並確認。";
         } catch (error) {
-            console.error("OCR 錯誤:", error);
-            statusBox.innerText = "⚠️ 自動辨識失敗，請手動填寫名稱與價格。";
+            statusBox.innerText = "⚠️ 自動辨識失敗，請手動填寫。";
         }
     }
 
     function renderProducts(items) {
         const grid = document.getElementById('product-grid');
         grid.innerHTML = items.map(p => {
-            let imgContent = '';
-            if (p.imgData) {
-                imgContent = `<img src="${p.imgData}" alt="${p.name}">`;
-            } else {
-                imgContent = p.emoji || '✨';
-            }
-
+            let imgContent = p.imgData ? `<img src="${p.imgData}" alt="${p.name}">` : (p.emoji || '✨');
             return `
                 <div class="product-card">
                     <div>
@@ -791,68 +879,42 @@
                         </div>
                     </div>
                     <div style="padding: 0 15px 15px 15px;">
-                        <button class="btn" onclick="addToCart(${p.id})">加入購物車</button>
+                        <button class="btn" onclick="addToCart('${p.id}')">加入雲端購物車</button>
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    function filterCat(category, btnElement) {
+    window.filterCat = function(category, btnElement) {
         currentCatFilter = category;
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
-        
-        if(category === '全部') {
-            renderProducts(products);
-        } else {
-            renderProducts(products.filter(p => p.cat === category));
-        }
+        renderProducts(category === '全部' ? products : products.filter(p => p.cat === category));
     }
 
-    function switchTab(tabName) {
-        document.getElementById('tab-shop').style.display = tabName === 'shop' ? 'block' : 'none';
-        document.getElementById('tab-cart').style.display = tabName === 'cart' ? 'block' : 'none';
-        document.getElementById('tab-orders').style.display = tabName === 'orders' ? 'block' : 'none';
-        document.getElementById('tab-profile').style.display = tabName === 'profile' ? 'block' : 'none';
-
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if(tabName === 'shop') document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        if(tabName === 'cart') {
-            document.querySelectorAll('.tab-btn')[1].classList.add('active');
-            renderCartItems();
-            renderAvailableCoupons();
-        }
-        if(tabName === 'orders') {
-            document.querySelectorAll('.tab-btn')[2].classList.add('active');
-            renderOrders();
-        }
-        if(tabName === 'profile') {
-            document.querySelectorAll('.tab-btn')[3].classList.add('active');
-            loadProfileView();
-        }
-    }
-
-    function addToCart(id) {
-        if(!currentUsername) {
+    window.addToCart = async function(id) {
+        if(!currentUser) {
             alert("請先登入會員，才能將商品加入購物車！");
             openAuthModal();
             return;
         }
-        const item = products.find(p => p.id === id);
-        cart.push(item);
-        localStorage.setItem(getUserStorageKey('cart'), JSON.stringify(cart));
+        const item = products.find(p => p.id === id || p.id == id);
+        if(!item) return;
+
+        userData.cart.push(item);
+        await saveUserDataToCloud();
         updateCartCount();
-        alert(`已將「${item.name}」放入【${currentUsername}】的購物車！`);
+        alert(`已將「${item.name}」放入您的雲端購物車！`);
     }
 
     function updateCartCount() {
-        document.getElementById('cart-count').innerText = cart.length;
+        document.getElementById('cart-count').innerText = userData.cart ? userData.cart.length : 0;
     }
 
-    function addCustomProduct() {
-        if(!currentUsername) {
-            alert("請先登入會員才能使用許願池上傳！");
+    window.addCustomProduct = async function() {
+        if(!currentUser) {
+            alert("請先登入會員才能上傳逸品！");
             openAuthModal();
             return;
         }
@@ -866,19 +928,18 @@
         }
 
         const newP = { 
-            id: Date.now(), 
             name, 
             price, 
             cat, 
             imgData: tempUploadedImgData, 
             emoji: '📸' 
         };
-        products.unshift(newP);
-        localStorage.setItem('shop_products', JSON.stringify(products));
+
+        // 寫入雲端 Firestore 共享商品牆
+        await addDoc(collection(db, "products"), newP);
 
         closeModal('wishlist-modal');
-        renderProducts(currentCatFilter === '全部' ? products : products.filter(p => p.cat === currentCatFilter));
-        alert(`成功將截圖商品「${name}」加入逛街清單！`);
+        alert(`🎉 成功上傳至雲端共享逸品牆！所有朋友現在都看得到了！`);
         
         document.getElementById('wish-name').value = '';
         document.getElementById('wish-price').value = '';
@@ -891,7 +952,6 @@
     function renderAvailableCoupons() {
         const box = document.getElementById('available-coupons');
         let html = '<strong>您的可用優惠券：</strong><br>';
-        
         const couponsList = [
             {code: 'INSIDER98', desc: '全單 98 折 (新手迎新)', req: 0},
             {code: 'GOLD95', desc: '全單 95 折 (金卡專屬)', req: 8000},
@@ -899,11 +959,12 @@
         ];
 
         couponsList.forEach(c => {
+            const usedCoupons = userData.usedCoupons || [];
             const isUsed = usedCoupons.includes(c.code);
-            const isUnlocked = totalSaved >= c.req;
+            const isUnlocked = userData.totalSaved >= c.req;
             if(isUnlocked) {
                 if(isUsed) {
-                    html += `<div class="coupon-tag" style="background:#e5e5e5; color:#777;"><span><b>${c.code}</b> - ${c.desc}</span> <span style="font-size:11px; color:#d90429; font-weight:bold;">[已使用過]</span></div>`;
+                    html += `<div class="coupon-tag" style="background:#e5e5e5; color:#777;"><span><b>${c.code}</b> - ${c.desc}</span> <span style="font-size:11px; color:#d90429; font-weight:bold;">[已使用]</span></div>`;
                 } else {
                     html += `<div class="coupon-tag"><span><b>${c.code}</b> - ${c.desc}</span> <span style="font-size:11px; color:green; font-weight:bold;">[可用]</span></div>`;
                 }
@@ -912,23 +973,23 @@
         box.innerHTML = html;
     }
 
-    function applyCoupon() {
+    window.applyCoupon = function() {
         const code = document.getElementById('coupon-input').value.trim().toUpperCase();
         const msg = document.getElementById('coupon-msg');
-
         if(!code) return;
 
+        const usedCoupons = userData.usedCoupons || [];
         if(usedCoupons.includes(code)) {
-            alert(`此優惠券 [${code}] 您之前已經使用過了！每張優惠券僅限使用一次。`);
+            alert(`此優惠券 [${code}] 您已經使用過了！`);
             return;
         }
 
         let isValid = false;
-        if(code === 'DIAMOND90' && totalSaved >= 20000) {
+        if(code === 'DIAMOND90' && userData.totalSaved >= 20000) {
             currentDiscountRate = 0.9;
             appliedCouponName = code;
             isValid = true;
-        } else if(code === 'GOLD95' && totalSaved >= 8000) {
+        } else if(code === 'GOLD95' && userData.totalSaved >= 8000) {
             currentDiscountRate = 0.95;
             appliedCouponName = code;
             isValid = true;
@@ -942,34 +1003,28 @@
             msg.innerText = `成功套用優惠券：${appliedCouponName}`;
             renderCartItems();
         } else {
-            alert("優惠券代碼無效，或您的 VIP 資格尚未解鎖該優惠！");
+            alert("優惠券代碼無效，或 VIP 資格尚未解鎖！");
         }
     }
 
     function getShippingFee(subtotal) {
         const method = document.getElementById('shipping-method').value;
         if(method === 'store_pickup') return 0;
-        if(method === 'sf_locker') {
-            return subtotal >= 400 ? 0 : 25;
-        }
+        if(method === 'sf_locker') return subtotal >= 400 ? 0 : 25;
         return subtotal >= 500 ? 0 : 30;
     }
 
-    function updateShippingFee() {
-        renderCartItems();
-    }
-
-    function togglePointsUse() {
-        renderCartItems();
-    }
+    window.updateShippingFee = function() { renderCartItems(); }
+    window.togglePointsUse = function() { renderCartItems(); }
 
     function renderCartItems() {
         const list = document.getElementById('cart-items-list');
-        const availablePoints = Math.floor(totalSaved / 100);
+        const cart = userData.cart || [];
+        const availablePoints = Math.floor((userData.totalSaved || 0) / 100);
         document.getElementById('cart-avail-points').innerText = availablePoints;
 
         if(cart.length === 0) {
-            list.innerHTML = '<p style="color:#888;">購物車目前是空的，快去挑選戰利品吧！</p>';
+            list.innerHTML = '<p style="color:#888;">雲端購物車目前是空的！</p>';
             document.getElementById('cart-subtotal').innerText = '0';
             document.getElementById('cart-total').innerText = '0';
             document.getElementById('discount-row').style.display = 'none';
@@ -992,8 +1047,7 @@
         const usePointsChecked = document.getElementById('use-points-chk').checked;
         let pointsMoneyDeduct = 0;
         if(usePointsChecked && availablePoints > 0) {
-            const maxDeduct = discountedSubtotal;
-            pointsMoneyDeduct = Math.min(availablePoints, maxDeduct);
+            pointsMoneyDeduct = Math.min(availablePoints, discountedSubtotal);
             document.getElementById('points-deduct-row').style.display = 'block';
             document.getElementById('cart-points-money').innerText = pointsMoneyDeduct.toLocaleString();
         } else {
@@ -1002,7 +1056,6 @@
 
         const shippingFee = getShippingFee(subtotal);
         document.getElementById('cart-shipping-fee').innerText = shippingFee;
-
         const finalTotal = Math.max(0, discountedSubtotal - pointsMoneyDeduct) + shippingFee;
 
         document.getElementById('cart-subtotal').innerText = subtotal.toLocaleString();
@@ -1015,19 +1068,20 @@
         document.getElementById('cart-total').innerText = finalTotal.toLocaleString();
     }
 
-    function removeFromCart(index) {
-        cart.splice(index, 1);
-        localStorage.setItem(getUserStorageKey('cart'), JSON.stringify(cart));
+    window.removeFromCart = async function(index) {
+        userData.cart.splice(index, 1);
+        await saveUserDataToCloud();
         updateCartCount();
         renderCartItems();
     }
 
-    function checkoutOrder() {
-        if(!currentUsername) {
-            alert("請先登入會員帳戶才能進行結帳！");
+    window.checkoutOrder = async function() {
+        if(!currentUser) {
+            alert("請先登入會員帳戶！");
             openAuthModal();
             return;
         }
+        const cart = userData.cart || [];
         if(cart.length === 0) {
             alert("購物車沒有商品喔！");
             return;
@@ -1039,31 +1093,27 @@
         const shippingMethod = document.getElementById('shipping-method').value;
 
         if(!shipName || !shipPhone || !shipAddress) {
-            alert("請填寫完整的收件人姓名、電話與送貨地址/智能櫃代碼！");
+            alert("請填寫完整的收件資訊！");
             return;
         }
 
         const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
         let discountedSubtotal = Math.round(subtotal * currentDiscountRate);
+        const availablePoints = Math.floor(userData.totalSaved / 100);
         const usePointsChecked = document.getElementById('use-points-chk').checked;
-        const availablePoints = Math.floor(totalSaved / 100);
         
-        let pointsMoneyDeduct = 0;
-        if(usePointsChecked && availablePoints > 0) {
-            pointsMoneyDeduct = Math.min(availablePoints, discountedSubtotal);
-        }
-
+        let pointsMoneyDeduct = usePointsChecked ? Math.min(availablePoints, discountedSubtotal) : 0;
         const shippingFee = getShippingFee(subtotal);
         const finalTotal = Math.max(0, discountedSubtotal - pointsMoneyDeduct) + shippingFee;
         const method = document.getElementById('pay-method').value;
         
         if(pointsMoneyDeduct > 0) {
-            totalSaved = Math.max(0, totalSaved - (pointsMoneyDeduct * 100));
+            userData.totalSaved = Math.max(0, userData.totalSaved - (pointsMoneyDeduct * 100));
         }
 
-        if(appliedCouponName && !usedCoupons.includes(appliedCouponName)) {
-            usedCoupons.push(appliedCouponName);
-            localStorage.setItem(getUserStorageKey('used_coupons'), JSON.stringify(usedCoupons));
+        if(appliedCouponName) {
+            if(!userData.usedCoupons) userData.usedCoupons = [];
+            userData.usedCoupons.push(appliedCouponName);
         }
 
         const newOrder = {
@@ -1078,14 +1128,13 @@
             simulatedDaysAdded: 0
         };
 
-        orders.unshift(newOrder);
-        totalSaved += finalTotal;
+        if(!userData.orders) userData.orders = [];
+        userData.orders.unshift(newOrder);
+        userData.totalSaved += finalTotal;
+        userData.cart = [];
 
-        localStorage.setItem(getUserStorageKey('orders'), JSON.stringify(orders));
-        localStorage.setItem(getUserStorageKey('saved'), totalSaved);
-        localStorage.setItem(getUserStorageKey('cart'), JSON.stringify([]));
+        await saveUserDataToCloud();
 
-        cart = [];
         currentDiscountRate = 1.0;
         appliedCouponName = "";
         document.getElementById('coupon-input').value = "";
@@ -1094,50 +1143,38 @@
         updateCartCount();
         updateUserUI();
 
-        alert(`🎉 結帳成功！透過 [${method}] 模擬付款 HKD ${finalTotal.toLocaleString()}。`);
+        alert(`🎉 雲端下單成功！付款 HKD ${finalTotal.toLocaleString()}。`);
         switchTab('orders');
     }
 
     function getOrderStatus(order) {
-        const now = Date.now();
-        const elapsedHours = (now - order.timestamp) / (1000 * 60 * 60) + (order.simulatedDaysAdded * 24);
-        
-        if (elapsedHours >= 168) {
-            return { text: "已完成", class: "status-completed" };
-        } else if (elapsedHours >= 72) {
-            return { text: "已送貨", class: "status-delivered" };
-        } else if (elapsedHours >= 24) {
-            return { text: "已出貨", class: "status-shipped" };
-        } else {
-            return { text: "處理中 (備貨中)", class: "status-processing" };
-        }
+        const elapsedHours = (Date.now() - order.timestamp) / (1000 * 60 * 60) + ((order.simulatedDaysAdded || 0) * 24);
+        if (elapsedHours >= 168) return { text: "已完成", class: "status-completed" };
+        if (elapsedHours >= 72) return { text: "已送貨", class: "status-delivered" };
+        if (elapsedHours >= 24) return { text: "已出貨", class: "status-shipped" };
+        return { text: "處理中 (備貨中)", class: "status-processing" };
     }
 
-    function simulateTimeAdvance() {
-        if(!currentUsername) {
-            alert("請先登入會員！");
-            return;
-        }
-        if(orders.length === 0) {
+    window.simulateTimeAdvance = async function() {
+        if(!userData.orders || userData.orders.length === 0) {
             alert("目前沒有訂單可以快進！");
             return;
         }
-        orders.forEach(o => {
-            o.simulatedDaysAdded = (o.simulatedDaysAdded || 0) + 7;
-        });
-        localStorage.setItem(getUserStorageKey('orders'), JSON.stringify(orders));
+        userData.orders.forEach(o => { o.simulatedDaysAdded = (o.simulatedDaysAdded || 0) + 7; });
+        await saveUserDataToCloud();
         renderOrders();
         alert("⚡ 模擬時間快進 7 天成功！");
     }
 
     function renderOrders() {
         const list = document.getElementById('orders-list');
-        if(!currentUsername) {
-            list.innerHTML = '<p style="color:#888;">請先登入帳戶以查看訂單紀錄。</p>';
+        const orders = userData.orders || [];
+        if(!currentUser) {
+            list.innerHTML = '<p style="color:#888;">請先登入帳戶。</p>';
             return;
         }
         if(orders.length === 0) {
-            list.innerHTML = '<p style="color:#888;">【' + currentUsername + '】目前尚無歷史訂單紀錄。</p>';
+            list.innerHTML = '<p style="color:#888;">尚無歷史訂單紀錄。</p>';
             return;
         }
 
@@ -1146,7 +1183,7 @@
             return `
                 <div style="background:white; border:1px solid var(--border-color); padding:15px; border-radius:8px; margin-bottom:15px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13px; color:#666;">
-                        <span>訂單編號: <strong>${o.id}</strong> | 下單時間: ${o.date}</span>
+                        <span>訂單編號: <b>${o.id}</b> | 下單時間: ${o.date}</span>
                         <span class="status-badge ${status.class}">${status.text}</span>
                     </div>
                     <div style="margin-bottom:8px; font-size:13px; color:#555; background:#fafafa; padding:8px; border-radius:4px;">
@@ -1165,27 +1202,29 @@
     }
 
     function loadProfileView() {
-        if(!currentUsername) {
+        if(!currentUser) {
             switchTab('shop');
             openAuthModal();
             return;
         }
-        document.getElementById('profile-name-input').value = currentUsername;
-        document.getElementById('profile-email-input').value = userEmail;
-        document.getElementById('prof-saved').innerText = totalSaved.toLocaleString();
-        document.getElementById('prof-points').innerText = Math.floor(totalSaved / 100).toLocaleString();
+        const username = currentUser.email.split('@')[0];
+        document.getElementById('profile-name-input').value = username;
+        document.getElementById('profile-email-input').value = userData.userEmail || currentUser.email;
+        document.getElementById('prof-saved').innerText = (userData.totalSaved || 0).toLocaleString();
+        document.getElementById('prof-points').innerText = Math.floor((userData.totalSaved || 0) / 100).toLocaleString();
 
         const couponsBox = document.getElementById('prof-coupons-list');
         let html = '';
         const couponsList = [
-            {code: 'INSIDER98', desc: '全單 98 折代碼 (新手迎新)', req: 0},
-            {code: 'GOLD95', desc: '全單 95 折代碼 (金卡專屬)', req: 8000},
-            {code: 'DIAMOND90', desc: '全單 9 折代碼 (鑽卡專屬)', req: 20000}
+            {code: 'INSIDER98', desc: '全單 98 折 (新手迎新)', req: 0},
+            {code: 'GOLD95', desc: '全單 95 折 (金卡專屬)', req: 8000},
+            {code: 'DIAMOND90', desc: '全單 9 折 (鑽卡專屬)', req: 20000}
         ];
 
         couponsList.forEach(c => {
+            const usedCoupons = userData.usedCoupons || [];
             const isUsed = usedCoupons.includes(c.code);
-            const isUnlocked = totalSaved >= c.req;
+            const isUnlocked = userData.totalSaved >= c.req;
             if(isUnlocked) {
                 if(isUsed) {
                     html += `<div class="coupon-tag" style="background:#e5e5e5; color:#777;"><span>💎 <b>${c.code}</b> - ${c.desc}</span> <span style="font-size:11px; color:#d90429; font-weight:bold;">[已使用]</span></div>`;
@@ -1199,56 +1238,39 @@
         couponsBox.innerHTML = html;
     }
 
-    function saveProfileData() {
+    window.saveProfileData = async function() {
         const newEmail = document.getElementById('profile-email-input').value.trim();
-        userEmail = newEmail;
-        localStorage.setItem(getUserStorageKey('email'), userEmail);
+        userData.userEmail = newEmail;
+        await saveUserDataToCloud();
         alert("會員個人資料儲存成功！");
     }
 
-    function openModal(modalId) {
-        document.getElementById(modalId).style.display = 'flex';
-    }
-
-    function closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-    }
-
     function updateUserUI() {
-        const display = document.getElementById('user-display');
-        const authBtnTop = document.getElementById('auth-btn-top');
         const cardBox = document.getElementById('vip-card-box');
         const vipTitle = document.getElementById('vip-title');
         const vipBadge = document.getElementById('vip-badge-text');
+        const totalSaved = userData.totalSaved || 0;
 
         document.getElementById('total-saved').innerText = totalSaved.toLocaleString();
-
-        if(currentUsername) {
-            display.innerText = `Hi, ${currentUsername}`;
-            authBtnTop.innerText = '登出 (Logout)';
-            authBtnTop.onclick = logoutUser;
-            authBtnTop.style.background = '#d90429';
-        } else {
-            display.innerText = '訪客模式 (未登入)';
-            authBtnTop.innerText = '登入 / 註冊';
-            authBtnTop.onclick = openAuthModal;
-            authBtnTop.style.background = 'var(--main-dark)';
-        }
+        const username = currentUser ? currentUser.email.split('@')[0] : '訪客';
 
         if(totalSaved >= 20000) {
             cardBox.className = "vip-card diamond";
-            vipTitle.innerText = `Diamond VIP (${currentUsername || '訪客'})`;
+            vipTitle.innerText = `Diamond VIP (${username})`;
             vipBadge.innerText = "DIAMOND";
         } else if(totalSaved >= 8000) {
             cardBox.className = "vip-card gold";
-            vipTitle.innerText = `VIB Gold (${currentUsername || '訪客'})`;
+            vipTitle.innerText = `VIB Gold (${username})`;
             vipBadge.innerText = "GOLD";
         } else {
             cardBox.className = "vip-card";
-            vipTitle.innerText = `Beauty Insider (${currentUsername || '訪客'})`;
+            vipTitle.innerText = `Beauty Insider (${username})`;
             vipBadge.innerText = "INSIDER";
         }
     }
+
+    window.openModal = function(id) { document.getElementById(id).style.display = 'flex'; }
+    window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; }
 </script>
 </body>
 </html>
