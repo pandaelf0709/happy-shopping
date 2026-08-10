@@ -426,7 +426,7 @@
     <!-- 5. 管理員後台頁面 (僅限管理員可見) -->
     <div id="tab-admin" style="display: none;">
         <h2>🛠️ 管理員戰情後台 (所有玩家數據)</h2>
-        <p style="color: #666; font-size: 13px;">此頁面僅有最高權限管理員可見，即時監控所有玩家上傳的逸品與訂單。</p>
+        <p style="color: #666; font-size: 13px;">此頁面僅有最高權限管理員可見，即時監控所有玩家上傳的逸品與訂單，並可直接進行刪除管理。</p>
         
         <div style="margin-top: 20px;">
             <h3>📦 所有玩家上傳的夢幻逸品總覽</h3>
@@ -453,7 +453,7 @@
         <p style="font-size: 13px; color: #666;" id="auth-modal-desc">輸入您的用戶名稱與密碼，雲端自動同步購物車！</p>
         
         <label>用戶名稱 (Username)：</label>
-        <input type="text" id="auth-username" placeholder="例如: panda 或 amy">
+        <input type="text" id="auth-username" placeholder="例如: panda 或 admin">
         
         <label>密碼 (Password)：</label>
         <input type="password" id="auth-password" placeholder="請輸入密碼">
@@ -504,7 +504,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCTs-gXpkaqa7pf9u9-SlDPwFEBHzQ8OB8",
@@ -596,6 +596,12 @@
                 products = cloudItems;
             }
             renderProducts(currentCatFilter === '全部' ? products : products.filter(p => p.cat === currentCatFilter));
+            
+            // 如果管理員頁面正在開啟，即時重新整理後台列表
+            const adminTab = document.getElementById('tab-admin');
+            if(adminTab && adminTab.style.display === 'block') {
+                loadAdminDashboard();
+            }
         });
     }
 
@@ -739,16 +745,24 @@
     async function loadAdminDashboard() {
         if(!currentUser) return;
         
-        const prodSnap = await getDocs(collection(db, "products"));
-        let allProds = [];
-        prodSnap.forEach(d => allProds.push(d.data()));
+        // 直接從目前記憶體的 products 渲染，或是重新抓取
+        let allProds = products;
         
-        document.getElementById('admin-all-products').innerHTML = `
+        let prodHtml = `
             <div style="background:white; padding:15px; border:1px solid #ddd; border-radius:6px; font-size:13px;">
-                共 ${allProds.length} 件商品在雲端。<br>
-                ${allProds.map(p => `• <b>${p.name}</b> (HKD ${p.price}) - 類別: ${p.cat}`).join('<br>')}
-            </div>
+                共 ${allProds.length} 件商品在雲端。<br><br>
         `;
+        
+        allProds.forEach(p => {
+            prodHtml += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
+                    <span><b>${p.name}</b> (HKD ${p.price}) - 類別: ${p.cat}</span>
+                    <button class="btn" style="width: auto; padding: 4px 10px; background: #d90429; font-size: 12px;" onclick="adminDeleteProduct('${p.id}')">刪除</button>
+                </div>
+            `;
+        });
+        prodHtml += `</div>`;
+        document.getElementById('admin-all-products').innerHTML = prodHtml;
 
         const userSnap = await getDocs(collection(db, "users"));
         let allCartsHtml = "";
@@ -775,6 +789,20 @@
 
         document.getElementById('admin-all-carts').innerHTML = allCartsHtml || '尚無玩家資料';
         document.getElementById('admin-all-orders').innerHTML = allOrdersHtml || '尚無歷史訂單';
+    }
+
+    // 🛠️ 管理員刪除雲端商品函式
+    window.adminDeleteProduct = async function(productId) {
+        if(confirm("確定要從雲端永久刪除這個夢幻逸品嗎？")) {
+            try {
+                await deleteDoc(doc(db, "products", productId));
+                alert("成功刪除該商品！");
+                loadAdminDashboard();
+            } catch (error) {
+                console.error(error);
+                alert("刪除失敗: " + error.message);
+            }
+        }
     }
 
     function renderCategories() {
