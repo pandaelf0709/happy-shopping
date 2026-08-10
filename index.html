@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopaholic's Paradise - 雲端聯網旗艦版</title>
-    <!-- 引入 Tesseract.js 用於圖片文字識別 (OCR) -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- 已移除 Tesseract.js，改由網址 Open Graph 自動抓取 -->
     <style>
         :root {
             --bg-color: #fcf9f8;
@@ -316,14 +315,13 @@
         <button class="tab-btn" onclick="switchTab('cart')">購物車 (<span id="cart-count">0</span>)</button>
         <button class="tab-btn" onclick="switchTab('orders')">訂單紀錄</button>
         <button class="tab-btn" onclick="switchTab('profile')">👤 會員中心</button>
-        <!-- 管理員後台頁籤會透過 JS 動態加入 -->
     </div>
 
     <!-- 1. 逛街頁面 -->
     <div id="tab-shop">
         <div class="action-bar">
             <div class="categories" id="category-buttons"></div>
-            <button class="btn" style="width: auto; padding: 8px 15px; background: var(--gold);" onclick="openModal('wishlist-modal')">📸 截圖上傳夢幻逸品 (雲端共享)</button>
+            <button class="btn" style="width: auto; padding: 8px 15px; background: var(--gold);" onclick="openModal('wishlist-modal')">🔗 貼上網址收藏逸品 (雲端共享)</button>
         </div>
         <div class="product-grid" id="product-grid"></div>
     </div>
@@ -468,27 +466,30 @@
     </div>
 </div>
 
-<!-- 截圖上傳夢幻逸品 Modal (含 OCR 辨識) -->
+<!-- 🔗 網址自動抓取夢幻逸品 Modal (取代原本的 OCR 截圖) -->
 <div class="modal" id="wishlist-modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('wishlist-modal')">&times;</span>
-        <h2>📸 截圖上傳夢幻逸品 (雲端共享)</h2>
-        <p style="font-size: 13px; color: #666;">上傳截圖後系統自動辨識，並即時同步到所有玩家的逛街頁面！</p>
+        <h2>🔗 貼上網址自動抓取夢幻逸品</h2>
+        <p style="font-size: 13px; color: #666;">貼上商品網址，系統將自動擷取標題與圖片，並即時同步至共享牆！</p>
         
-        <label>上傳商品截圖：</label>
-        <input type="file" id="wish-img-file" accept="image/*" style="margin: 8px 0 15px 0;" onchange="previewAndOcrImage(event)">
-        
-        <div id="img-preview-box" style="margin-bottom: 15px; text-align: center; display: none;">
-            <img id="preview-img-tag" src="" alt="預覽圖" style="max-height: 140px; border-radius: 6px; border: 1px solid #ddd;">
+        <label>商品網址 (URL)：</label>
+        <div style="display: flex; gap: 8px; margin: 8px 0 15px 0;">
+            <input type="url" id="wish-url" placeholder="https://example.com/product/123" style="margin: 0; flex: 1;">
+            <button class="btn" style="width: 100px;" onclick="fetchUrlOG()">自動抓取</button>
         </div>
 
         <div id="ocr-status" style="font-size: 13px; color: var(--gold); font-weight: bold; margin-bottom: 10px; text-align: center;"></div>
 
+        <div id="img-preview-box" style="margin-bottom: 15px; text-align: center; display: none;">
+            <img id="preview-img-tag" src="" alt="預覽圖" style="max-height: 140px; border-radius: 6px; border: 1px solid #ddd;">
+        </div>
+
         <label>商品名稱：</label>
-        <input type="text" id="wish-name" placeholder="系統將自動帶入或手動修改">
+        <input type="text" id="wish-name" placeholder="系統自動帶入或手動修改">
         
         <label>價格 (HKD)：</label>
-        <input type="number" id="wish-price" placeholder="系統將自動抓取數字或手動修改">
+        <input type="number" id="wish-price" placeholder="請手動輸入商品價格">
         
         <label>選擇或新增類別：</label>
         <div style="display: flex; gap: 5px;">
@@ -496,7 +497,7 @@
             <button class="btn" style="width: 100px; height: 42px; margin-top: 8px;" onclick="addNewCategoryPrompt()">➕ 新分類</button>
         </div>
 
-        <button class="btn" onclick="addCustomProduct()" style="margin-top: 10px;">上傳至雲端共享逸品牆</button>
+        <button class="btn" onclick="addCustomProduct()" style="margin-top: 10px; background: var(--accent-pink);">上傳至雲端共享逸品牆</button>
     </div>
 </div>
 
@@ -543,9 +544,11 @@
     let currentDiscountRate = 1.0;
     let appliedCouponName = "";
     let currentCatFilter = "全部";
-    let tempUploadedImgData = null;
+    
+    // 暫存透過網址抓取到的圖片與來源連結
+    let tempOGData = { img: null, link: null };
 
-    // 定義您的管理員帳號名稱 (請改成您註冊時用的用戶名稱)
+    // 定義您的管理員帳號名稱
     const ADMIN_USERNAME = "admin"; 
 
     window.onload = function() {
@@ -556,14 +559,12 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                // 從 Email還原出用戶名稱
                 const username = user.email.split('@')[0];
                 document.getElementById('user-display').innerText = `Hi, ${username}`;
                 document.getElementById('auth-btn-top').innerText = '登出 (Logout)';
                 document.getElementById('auth-btn-top').onclick = logoutUser;
                 document.getElementById('auth-btn-top').style.background = '#d90429';
 
-                // 檢查是否為管理員
                 if (username === ADMIN_USERNAME) {
                     setupAdminTab(true);
                 } else {
@@ -594,7 +595,6 @@
                 cloudItems.push({ id: docSnap.id, ...docSnap.data() });
             });
 
-            // 如果雲端沒有商品，先寫入預設商品
             if(cloudItems.length === 0) {
                 defaultProducts.forEach(async (p) => {
                     await addDoc(collection(db, "products"), p);
@@ -621,14 +621,12 @@
         updateCartCount();
     }
 
-    // 儲存玩家個人雲端數據
     async function saveUserDataToCloud() {
         if(!currentUser) return;
         const docRef = doc(db, "users", currentUser.uid);
         await setDoc(docRef, userData);
     }
 
-    // 帳號認證 (自動包裝為虛擬 Email 達成 CRM 體驗)
     window.processAuth = async function() {
         const username = document.getElementById('auth-username').value.trim().toLowerCase();
         const password = document.getElementById('auth-password').value.trim();
@@ -638,12 +636,11 @@
             return;
         }
 
-        // 自動組合為虛擬 Email 傳給 Firebase Authentication
         const virtualEmail = `${username}@shopaholic.mock`;
 
         try {
             if(isRegisterMode) {
-                const userCredential = await createUserWithEmailAndPassword(auth, virtualEmail, password);
+                await createUserWithEmailAndPassword(auth, virtualEmail, password);
                 alert(`🎉 註冊成功！已自動登入帳戶：【${username}】`);
             } else {
                 await signInWithEmailAndPassword(auth, virtualEmail, password);
@@ -701,7 +698,6 @@
         }
     }
 
-    // 畫面渲染與分頁切換
     window.switchTab = function(tabName) {
         document.getElementById('tab-shop').style.display = tabName === 'shop' ? 'block' : 'none';
         document.getElementById('tab-cart').style.display = tabName === 'cart' ? 'block' : 'none';
@@ -711,7 +707,6 @@
         if(adminTab) adminTab.style.display = tabName === 'admin' ? 'block' : 'none';
 
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        // 依照順序高亮標籤
         if(tabName === 'shop') document.querySelectorAll('.tab-btn')[0].classList.add('active');
         if(tabName === 'cart') {
             document.querySelectorAll('.tab-btn')[1].classList.add('active');
@@ -750,11 +745,9 @@
         }
     }
 
-    // 載入管理員後台資料 (抓取所有玩家數據)
     async function loadAdminDashboard() {
         if(!currentUser) return;
         
-        // 1. 抓取所有上傳的商品
         const prodSnap = await getDocs(collection(db, "products"));
         let allProds = [];
         prodSnap.forEach(d => allProds.push(d.data()));
@@ -766,7 +759,6 @@
             </div>
         `;
 
-        // 2. 抓取所有玩家的購物車與訂單
         const userSnap = await getDocs(collection(db, "users"));
         let allCartsHtml = "";
         let allOrdersHtml = "";
@@ -821,53 +813,57 @@
         }
     }
 
-    // 截圖上傳與 OCR
-    window.previewAndOcrImage = async function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            tempUploadedImgData = e.target.result;
-            const box = document.getElementById('img-preview-box');
-            const tag = document.getElementById('preview-img-tag');
-            tag.src = tempUploadedImgData;
-            box.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-
+    // 🔗 貼上網址自動抓取 Open Graph 資訊 (Title & Image)
+    window.fetchUrlOG = async function() {
+        const urlInput = document.getElementById('wish-url');
+        const url = urlInput ? urlInput.value.trim() : '';
         const statusBox = document.getElementById('ocr-status');
-        statusBox.innerText = "🔍 系統正在使用 OCR 智慧讀取截圖中的名稱與價錢...";
+
+        if (!url) {
+            alert("請先輸入有效的商品網址！");
+            return;
+        }
+
+        statusBox.innerText = "⏳ 正在抓取網頁 Open Graph 資訊中...";
 
         try {
-            const { data: { text } } = await Tesseract.recognize(file, 'eng+chi_tra', { logger: m => {} });
-            const priceRegex = /(?:HKD|\$|￥)?\s*([0-9]{1,3}(?:,[0-9]{3})*|[0-9]+)(?:\.[0-9]{2})?/g;
-            let match;
-            let foundPrices = [];
-            while ((match = priceRegex.exec(text)) !== null) {
-                let pNum = parseInt(match[1].replace(/,/g, ''));
-                if (pNum > 50 && pNum < 200000) {
-                    foundPrices.push(pNum);
-                }
-            }
-            if (foundPrices.length > 0) {
-                document.getElementById('wish-price').value = foundPrices[0];
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            
+            if (!response.ok) throw new Error("網路連線異常");
+
+            const data = await response.json();
+            const doc = new DOMParser().parseFromString(data.contents, 'text/html');
+
+            const ogTitle = doc.querySelector('meta[property="og:title"]')?.content || doc.querySelector('title')?.innerText || "";
+            const ogImage = doc.querySelector('meta[property="og:image"]')?.content || doc.querySelector('meta[name="twitter:image"]')?.content || "";
+
+            if (ogTitle) {
+                document.getElementById('wish-name').value = ogTitle.substring(0, 40);
             }
 
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
-            if (lines.length > 0) {
-                document.getElementById('wish-name').value = lines[0].substring(0, 30);
+            if (ogImage) {
+                tempOGData.img = ogImage;
+                const previewBox = document.getElementById('img-preview-box');
+                const previewImg = document.getElementById('preview-img-tag');
+                previewImg.src = ogImage;
+                previewBox.style.display = 'block';
             }
-            statusBox.innerText = "✨ OCR 讀取完成！請檢查並確認。";
-        } catch (error) {
-            statusBox.innerText = "⚠️ 自動辨識失敗，請手動填寫。";
+
+            tempOGData.link = url;
+            statusBox.innerText = "✨ 成功擷取商品資訊與圖片！";
+
+        } catch (err) {
+            console.error(err);
+            statusBox.innerText = "⚠️ 網址抓取失敗，請手動輸入商品名稱與價格。";
         }
     }
 
+    // 🎨 渲染商品列表 (含 🔗 連結按鈕)
     function renderProducts(items) {
         const grid = document.getElementById('product-grid');
         grid.innerHTML = items.map(p => {
-            let imgContent = p.imgData ? `<img src="${p.imgData}" alt="${p.name}">` : (p.emoji || '✨');
+            let imgContent = p.img ? `<img src="${p.img}" alt="${p.name}">` : (p.emoji || '✨');
             return `
                 <div class="product-card">
                     <div>
@@ -878,8 +874,9 @@
                             <div class="product-price">HKD ${p.price.toLocaleString()}</div>
                         </div>
                     </div>
-                    <div style="padding: 0 15px 15px 15px;">
-                        <button class="btn" onclick="addToCart('${p.id}')">加入雲端購物車</button>
+                    <div style="padding: 0 15px 15px 15px; display: flex; gap: 8px;">
+                        <button class="btn" style="flex: 1;" onclick="addToCart('${p.id}')">加入購物車</button>
+                        ${p.link ? `<a href="${p.link}" target="_blank" class="btn" style="width: auto; padding: 0 12px; background: #555; text-decoration: none; display: flex; align-items: center; justify-content: center;" title="前往原商品頁面">🔗</a>` : ''}
                     </div>
                 </div>
             `;
@@ -912,6 +909,7 @@
         document.getElementById('cart-count').innerText = userData.cart ? userData.cart.length : 0;
     }
 
+    // ➕ 上傳自訂商品（包含網址與 OG 圖片）
     window.addCustomProduct = async function() {
         if(!currentUser) {
             alert("請先登入會員才能上傳逸品！");
@@ -921,32 +919,33 @@
         const name = document.getElementById('wish-name').value.trim();
         const price = parseFloat(document.getElementById('wish-price').value);
         const cat = document.getElementById('wish-cat').value;
+        const url = document.getElementById('wish-url').value.trim();
 
         if(!name || isNaN(price) || price <= 0) {
-            alert("請輸入或確認有效的商品名稱與價格！");
+            alert("請輸入有效的商品名稱與價格！");
             return;
         }
 
         const newP = { 
-            name, 
-            price, 
-            cat, 
-            imgData: tempUploadedImgData, 
-            emoji: '📸' 
+            name: name, 
+            price: price, 
+            cat: cat, 
+            img: tempOGData.img || null, 
+            link: url || tempOGData.link || null,
+            emoji: '✨' 
         };
 
-        // 寫入雲端 Firestore 共享商品牆
         await addDoc(collection(db, "products"), newP);
 
         closeModal('wishlist-modal');
-        alert(`🎉 成功上傳至雲端共享逸品牆！所有朋友現在都看得到了！`);
+        alert(`🎉 成功上傳至雲端共享逸品牆！`);
         
         document.getElementById('wish-name').value = '';
         document.getElementById('wish-price').value = '';
-        document.getElementById('wish-img-file').value = '';
+        document.getElementById('wish-url').value = '';
         document.getElementById('img-preview-box').style.display = 'none';
         document.getElementById('ocr-status').innerText = '';
-        tempUploadedImgData = null;
+        tempOGData = { img: null, link: null };
     }
 
     function renderAvailableCoupons() {
